@@ -23,12 +23,18 @@ public class Window {
     String title;
     private long glfwWindow;
     
+    private float r, g, b, a;
+    
     private static Window window = null;
     
     private Window() {
         this.width = 1920;
         this.height = 1080;
         this.title = "GhostHunt2D";
+        this.r = 1;
+        this.g = 1;
+        this.b = 1;
+        this.a = 1;
     }
     
     public static Window get() {
@@ -74,6 +80,11 @@ public class Window {
             throw new IllegalStateException("Falha ao criar a janela GLFW");
         }
         
+        GLFW.glfwSetCursorPosCallback(glfwWindow, MouseListener::mousePosCallback);
+        GLFW.glfwSetMouseButtonCallback(glfwWindow, MouseListener::mouseButtonCallback);
+        GLFW.glfwSetScrollCallback(glfwWindow, MouseListener::mouseScrollCallback);
+        GLFW.glfwSetKeyCallback(glfwWindow, KeyListener::keyCallback);
+        
         // Adiciona o contexto do OpenGL
         GLFW.glfwMakeContextCurrent(glfwWindow);
         // Habilita o v-sync
@@ -90,8 +101,12 @@ public class Window {
             // Poll events
             GLFW.glfwPollEvents();
             
-            GL11.glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
+            GL11.glClearColor(r, g, b, a);
             GL11.glClear(GL_COLOR_BUFFER_BIT);
+            
+            if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_SPACE)) {
+                System.out.println("Espaço apertado!");
+            }
             
             GLFW.glfwSwapBuffers(glfwWindow);
         }
