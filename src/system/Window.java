@@ -12,6 +12,7 @@ import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL11;
 import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.system.MemoryUtil.NULL;
+import util.Time;
 
 /**
  *
@@ -23,9 +24,11 @@ public class Window {
     String title;
     private long glfwWindow;
     
-    private float r, g, b, a;
+    public float r, g, b, a;
     
     private static Window window = null;
+    
+    private static Scene currentScene;
     
     private Window() {
         this.width = 1920;
@@ -35,6 +38,21 @@ public class Window {
         this.g = 1;
         this.b = 1;
         this.a = 1;
+    }
+    
+    public static void changeScene(int newScene) {
+        switch(newScene){
+            case 0:
+                currentScene = new LevelEditorScene();
+                //currentScene.init();
+                break;
+            case 1:
+                currentScene = new LevelScene();
+                break;
+            default:
+                assert false : "Cena desconhecida '" + newScene + "'";
+                break;
+        }
     }
     
     public static Window get() {
@@ -88,15 +106,22 @@ public class Window {
         // Adiciona o contexto do OpenGL
         GLFW.glfwMakeContextCurrent(glfwWindow);
         // Habilita o v-sync
-        GLFW.glfwSwapInterval(1);
+        GLFW.glfwSwapInterval(0);
         
         // Torna a janela visível
         GLFW.glfwShowWindow(glfwWindow);
         
         GL.createCapabilities();
+        
+        Window.changeScene(0);
     }
     
     public void loop() {
+        
+        float beginTime = Time.getTime();
+        float endTime;
+        float dt = -1.0f;
+        
         while(!GLFW.glfwWindowShouldClose(glfwWindow)) {
             // Poll events
             GLFW.glfwPollEvents();
@@ -104,11 +129,19 @@ public class Window {
             GL11.glClearColor(r, g, b, a);
             GL11.glClear(GL_COLOR_BUFFER_BIT);
             
+            if(dt >= 0){
+                currentScene.update(dt);
+            }
+            
             if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_SPACE)) {
                 System.out.println("Espaço apertado!");
             }
             
             GLFW.glfwSwapBuffers(glfwWindow);
+            
+            endTime = Time.getTime();
+            dt = endTime - beginTime;
+            beginTime = endTime;
         }
     }
     
